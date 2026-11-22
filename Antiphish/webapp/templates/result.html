@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Rezultat – AntiPhish{% endblock %}
+{% block content %}
+{% set li = level_info(res.level) %}
+<section class="card verdict {{ li[1] }}">
+  <div class="score">
+    <div class="num">{{ '%.0f' % res.score }}</div>
+    <div class="of">/ 100</div>
+  </div>
+  <div>
+    <h1>{{ li[0] }}</h1>
+    <p class="advice">{{ li[2] }}</p>
+    <div class="bar"><span class="fill w{{ (res.score // 10)|int }}"></span></div>
+  </div>
+</section>
+
+<section class="card">
+  <dl class="meta">
+    <dt>Naslov</dt><dd>{{ row.subject or '—' }}</dd>
+    <dt>Pošiljalac</dt><dd>{{ row.sender or '—' }}</dd>
+    <dt>Provjereno</dt><dd>{{ row.created_at|dt }} · {{ 'AI provjera' if row.mode == 'ai' else 'Brza provjera' }} · {{ row.source }}</dd>
+    {% if res.auth and (res.auth.spf or res.auth.dkim or res.auth.dmarc) %}
+    <dt>Autentičnost</dt><dd>SPF {{ res.auth.spf or '?' }} · DKIM {{ res.auth.dkim or '?' }} · DMARC {{ res.auth.dmarc or '?' }}</dd>
+    {% endif %}
+    {% if res.attachments %}<dt>Prilozi</dt><dd>{{ res.attachments|join(', ') }}</dd>{% endif %}
+  </dl>
+  {% if not res.has_headers %}
+  <div class="flash warn">Analiziran je samo tekst, bez zaglavlja. Za potpunu provjeru (pošiljalac, autentičnost, prilozi) priloži .eml fajl.</div>
+  {% endif %}
+  {% if res.note %}<div class="flash warn">{{ res.note }}</div>{% endif %}
+</section>
+
+{% if positive %}
+<section class="card">
+  <h2>Zašto je sumnjivo</h2>
+  <ul class="signals">
+  {% for s in positive %}
+    <li><span class="w">+{{ s.weight }}</span>
+      <div><b>{{ s.help or s.signal }}</b><br><small class="muted">{{ s.detail|defang }}</small></div></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if negative %}
+<section class="card">
+  <h2>Šta ide u prilog legitimnosti</h2>
+  <ul class="signals good">
+  {% for s in negative %}
+    <li><span class="w">{{ s.weight }}</span>
+      <div><b>{{ s.help or s.signal }}</b><br><small class="muted">{{ s.detail|defang }}</small></div></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if res.urls_found %}
+<section class="card">
+  <h2>Linkovi u mailu <small class="muted">(onesposobljeni – ne kopiraj ih u preglednik)</small></h2>
+  <ul class="urls">{% for u in res.urls_found[:25] %}<li><code>{{ u|defang }}</code></li>{% endfor %}</ul>
+</section>
+{% endif %}
+
+{% if res.attachment_findings %}
+<section class="card">
+  <h2>Analiza priloga</h2>
+  <ul class="findings">{% for f in res.attachment_findings[:40] %}<li><code>{{ f|defang }}</code></li>{% endfor %}</ul>
+</section>
+{% endif %}
+
+{% if own %}
+<section class="card">
+  <h2>Da li je ocjena tačna?</h2>
+  {% if feedback is not none %}
+    <p>Tvoj feedback: <b>{{ 'phishing' if feedback == 1 else 'legitiman mail' }}</b>. Možeš ga promijeniti.</p>
+  {% endif %}
+  {% if can_feedback %}
+  <form method="post" action="/r/{{ row.id }}/feedback" class="feedback">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="text" name="comment" maxlength="500" placeholder="Komentar (opcionalno)">
+    <button name="label" value="0" class="ok">✔ Ovo je legitiman mail</button>
+    <button name="label" value="1" class="bad">✖ Ovo je phishing</button>
+  </form>
+  <p class="muted">Feedback šalje tekst ovog maila u skup za učenje modela.</p>
+  {% else %}
+  <p class="muted">Tekst maila je obrisan nakon {{ config.RETAIN_TEXT_HOURS }}h (privatnost) – feedback više nije moguć.</p>
+  {% endif %}
+</section>
+{% endif %}
+<p><a href="/">← Nova provjera</a></p>
+{% endblock %}

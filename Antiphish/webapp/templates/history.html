@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Historija – AntiPhish{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Historija provjera</h1>
+  {% if not scans %}<p class="muted">Još nema provjera.</p>{% else %}
+  <table>
+    <tr><th>Vrijeme</th><th>Naslov</th><th>Pošiljalac</th><th>Ocjena</th><th>Feedback</th></tr>
+    {% for s in scans %}{% set li = level_info(s.level) %}
+    <tr>
+      <td>{{ s.created_at|dt }}</td>
+      <td><a href="/r/{{ s.id }}">{{ (s.subject or '—')[:70] }}</a></td>
+      <td>{{ (s.sender or '—')[:40] }}</td>
+      <td><span class="pill {{ li[1] }}">{{ '%.0f' % s.score }} {{ li[0] }}</span></td>
+      <td>{% if s.feedback == 1 %}phishing{% elif s.feedback == 0 %}legit{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Privatnost – AntiPhish{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Privatnost (beta)</h1>
+  <ul>
+    <li>Mail koji pošalješ na provjeru analizira se na našem serveru. Prilozi se otvaraju samo u izolovanom procesu i <b>nikad se ne pokreću</b>.</li>
+    <li>Čuvamo rezultat (ocjenu, signale, naslov i pošiljaoca) radi tvoje historije.</li>
+    <li>Tekst maila čuvamo najviše <b>{{ config.RETAIN_TEXT_HOURS }} sati</b> (da bi mogao dati feedback), zatim se briše. Ako klikneš feedback, tekst ostaje u skupu za učenje modela.</li>
+    <li>Prilozi se ne čuvaju.</li>
+    <li>AI provjera koristi Qwen model{% if config.WEB_ALLOW_LLM %} na serveru koji podesi administrator (lokalno preko Ollame ili preko cloud API-ja – pitaj administratora){% endif %}.</li>
+    <li>Ako je uključen VirusTotal, šaljemo samo hash fajla i pretragu postojećih rezultata za linkove – nikad sam fajl, i nikad ne prijavljujemo nove linkove na skeniranje.</li>
+    <li>Brisanje podataka: javi se administratoru.</li>
+  </ul>
+</section>
+{% endblock %}

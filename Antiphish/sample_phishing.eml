@@ -1,0 +1,13 @@
+From: "PayPal Support" <security.alerts@paypa1-secure.tk>
+To: victim@company.com
+Subject: Urgent: Your account has been limited
+Authentication-Results: mx.company.com; spf=fail; dkim=fail; dmarc=fail
+MIME-Version: 1.0
+Content-Type: text/html; charset="utf-8"
+
+<html><body>
+<p>Dear customer, we detected unauthorized access to your account.</p>
+<p>Your account will be suspended within 24 hours unless you
+<a href="http://192.168.44.1/verify/login.php">verify your identity now</a>.</p>
+<p>Confirm your password to avoid termination.</p>
+</body></html>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Nalog – AntiPhish{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Nalog</h1>
+  <p>{{ user.email }} · <b>{{ user.credits }}</b> kredita</p>
+  <h2>Promjena lozinke</h2>
+  <form method="post" action="/account/password">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Trenutna lozinka <input type="password" name="current" required autocomplete="current-password"></label>
+    <label>Nova lozinka (min 10) <input type="password" name="new" required minlength="10" autocomplete="new-password"></label>
+    <button class="primary">Promijeni</button>
+  </form>
+  {% if config.INTAKE_USER %}
+  <h2>Provjera prosljeđivanjem</h2>
+  <p>Proslijedi sumnjiv mail <b>kao prilog</b> na <code>{{ config.INTAKE_USER }}</code> sa adrese <b>{{ user.email }}</b>. Izvještaj stiže kao odgovor.</p>
+  {% endif %}
+</section>
+{% endblock %}

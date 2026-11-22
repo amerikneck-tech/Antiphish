@@ -1,0 +1,17 @@
+# Server (web app + mail intake). Desktop-only extras (streamlit, plyer, keyring) not needed.
+scikit-learn==1.9.1
+joblib>=1.3
+numpy>=1.26
+requests>=2.31
+pypdf>=4.0
+pypdfium2>=4.0
+opencv-python-headless>=4.8
+py7zr>=0.21
+rarfile>=4.1
+oletools>=0.60
+pillow>=10.0
+fastapi>=0.115
+uvicorn[standard]>=0.30
+jinja2>=3.1
+python-multipart>=0.0.9
+itsdangerous>=2.1

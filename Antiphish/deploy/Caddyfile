@@ -1,0 +1,8 @@
+# Automatic HTTPS (Let's Encrypt) for your subdomain, e.g. antiphish.example.com
+{$DOMAIN} {
+    encode gzip
+    request_body {
+        max_size 20MB
+    }
+    reverse_proxy web:8000
+}

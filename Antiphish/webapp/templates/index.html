@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card">
+  <h1>Provjeri sumnjiv mail</h1>
+  <form method="post" action="/scan" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>1) Priloži mail kao <b>.eml</b> fajl (najbolje – uključuje zaglavlja i priloge)
+      <input type="file" name="file" accept=".eml,message/rfc822">
+    </label>
+    <p class="or">ili</p>
+    <label>2) Zalijepi izvorni kod maila ("Show original") ili samo tekst
+      <textarea name="raw" rows="9" placeholder="Received: ...&#10;From: ...&#10;Subject: ...&#10;&#10;...ili samo tekst poruke"></textarea>
+    </label>
+    <fieldset class="modes">
+      <label class="radio"><input type="radio" name="mode" value="quick" checked>
+        Brza provjera ({{ config.COST_QUICK }} kredit)</label>
+      <label class="radio {% if not llm %}disabled{% endif %}"><input type="radio" name="mode" value="ai" {% if not llm %}disabled{% endif %}>
+        AI provjera sa Qwen ({{ config.COST_AI }} kredita){% if not llm %} – trenutno nedostupno{% endif %}</label>
+    </fieldset>
+    <button class="primary">Provjeri</button>
+  </form>
+</section>
+
+<section class="card help">
+  <h2>Kako dobiti .eml fajl?</h2>
+  <ul>
+    <li><b>Gmail (web):</b> otvori mail → ⋮ (tri tačke) → <i>Download message</i>. Ili <i>Show original</i> → kopiraj sve i zalijepi gore.</li>
+    <li><b>Outlook (web / novi Outlook):</b> otvori mail → ⋯ → <i>Save</i> / <i>Download</i> (.eml). Za izvorni kod: ⋯ → <i>View</i> → <i>View message source</i>.</li>
+    <li><b>Telefon:</b> proslijedi mail kao prilog na adresu za provjeru (ako je podešena), ili kopiraj tekst.</li>
+  </ul>
+  <p class="muted">Samo zalijepljen tekst (bez zaglavlja) daje slabiju analizu – nema provjere pošiljaoca, autentičnosti ni priloga.</p>
+</section>
+{% endblock %}

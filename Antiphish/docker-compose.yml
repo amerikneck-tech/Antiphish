@@ -1,0 +1,55 @@
+# AntiPhish on a VPS.
+#   docker compose up -d --build                 # web + HTTPS (Caddy)
+#   docker compose --profile intake up -d        # + forward-to-scan mailbox
+#   docker compose --profile llm up -d           # + local Qwen via Ollama (needs ~8GB RAM)
+services:
+  web:
+    build: .
+    image: antiphish:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      OLLAMA_HOST_HINT: "set QWEN_BASE_URL=http://ollama:11434 in .env when using the llm profile"
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "127.0.0.1:8000:8000"     # only local; the public entrance is Caddy (or your nginx)
+    mem_limit: 3g
+
+  intake:
+    image: antiphish:latest
+    profiles: ["intake"]
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    command: ["python", "-m", "webapp.mail_intake"]
+    depends_on: [web]
+    mem_limit: 2g
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web]
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["llm"]
+    restart: unless-stopped
+    volumes:
+      - ollama:/root/.ollama
+    mem_limit: 9g
+
+volumes:
+  caddy_data:
+  caddy_config:
+  ollama:

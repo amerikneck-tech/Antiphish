@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Admin – AntiPhish{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Admin</h1>
+  <p>Qwen AI: <b>{{ 'dostupan' if llm else 'nedostupan' }}</b> ·
+     Adresa za prosljeđivanje: <b>{{ config.INTAKE_USER or 'nije podešena' }}</b></p>
+</section>
+<section class="card">
+  <h2>Korisnici</h2>
+  <table>
+    <tr><th>Email</th><th>Krediti</th><th>Provjera</th><th>Status</th><th></th></tr>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.email }}{% if u.is_admin %} <span class="pill low">admin</span>{% endif %}</td>
+      <td>
+        <form method="post" action="/admin/users/{{ u.id }}/credits" class="inline">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <input type="number" name="credits" value="{{ u.credits }}" min="0" class="small">
+          <button>Sačuvaj</button>
+        </form>
+      </td>
+      <td>{{ u.n_scans }}</td>
+      <td>{{ 'deaktiviran' if u.disabled else 'aktivan' }}</td>
+      <td>{% if u.id != user.id %}
+        <form method="post" action="/admin/users/{{ u.id }}/toggle" class="inline">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button>{{ 'Aktiviraj' if u.disabled else 'Deaktiviraj' }}</button>
+        </form>{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <h3>Novi korisnik</h3>
+  <form method="post" action="/admin/users" class="row">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="email" name="email" placeholder="email" required>
+    <input type="password" name="password" placeholder="početna lozinka (min 10)" required minlength="10">
+    <input type="number" name="credits" value="{{ config.DEFAULT_CREDITS }}" min="0" class="small">
+    <button class="primary">Kreiraj</button>
+  </form>
+</section>
+<section class="card">
+  <h2>Feedback za učenje</h2>
+  <p>Ukupno {{ fb.total or 0 }} ({{ fb.phishing or 0 }} phishing / {{ fb.legit or 0 }} legit) · neizvezeno: <b>{{ fb.pending or 0 }}</b></p>
+  <form method="post" action="/admin/feedback/export">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button>Izvezi u data/feedback.csv</button>
+  </form>
+  {% if recent %}
+  <table>
+    <tr><th>Vrijeme</th><th>Korisnik</th><th>Naslov</th><th>Ocjena</th><th>Korisnik kaže</th><th>Komentar</th></tr>
+    {% for f in recent %}
+    <tr><td>{{ f.created_at|dt }}</td><td>{{ f.email }}</td><td>{{ (f.subject or '')[:50] }}</td>
+        <td>{{ '%.0f' % f.score }} {{ f.level }}</td><td>{{ 'phishing' if f.label == 1 else 'legit' }}</td>
+        <td>{{ f.comment or '' }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</section>
+{% endblock %}
